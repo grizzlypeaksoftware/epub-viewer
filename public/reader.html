@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EPUB Viewer - Reader</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body class="reader-page">
+  <!-- Loading Overlay -->
+  <div id="loading-overlay">
+    <div class="text-center">
+      <div class="loading-book">
+        <div class="book-animation">
+          <div class="book-page"></div>
+          <div class="book-page"></div>
+          <div class="book-page"></div>
+        </div>
+      </div>
+      <p class="mt-4 loading-text">Opening your book...</p>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="reader-navbar">
+    <div class="d-flex align-items-center">
+      <a href="/" class="nav-btn me-3" title="Back to library">
+        <i class="bi bi-arrow-left"></i>
+      </a>
+      <div class="book-title-wrapper">
+        <span class="book-title-label" id="book-title">Loading...</span>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button class="nav-btn d-md-none" data-bs-toggle="offcanvas" data-bs-target="#toc-offcanvas" title="Table of Contents">
+        <i class="bi bi-list"></i>
+      </button>
+      <button id="analyze-btn" class="analysis-btn" data-bs-toggle="offcanvas" data-bs-target="#analysis-offcanvas" title="Analyze Book">
+        <i class="bi bi-graph-up"></i>
+      </button>
+      <button class="nav-btn" data-bs-toggle="offcanvas" data-bs-target="#settings-offcanvas" title="Settings">
+        <i class="bi bi-sliders"></i>
+      </button>
+    </div>
+  </nav>
+
+  <div class="reader-body">
+    <!-- TOC Sidebar (desktop) -->
+    <div id="toc-sidebar" class="d-none d-md-flex flex-column">
+      <div class="toc-header">
+        <i class="bi bi-bookmark me-2"></i> Contents
+      </div>
+      <div class="toc-scroll">
+        <div id="toc" class="list-group list-group-flush"></div>
+      </div>
+    </div>
+
+    <!-- Viewer -->
+    <div class="viewer-wrapper">
+      <div id="viewer"></div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="reader-nav-bar">
+    <button id="prev-btn" class="nav-page-btn">
+      <i class="bi bi-chevron-left"></i>
+      <span class="d-none d-sm-inline ms-1">Prev</span>
+    </button>
+    <div class="nav-location" id="location-info">-</div>
+    <button id="next-btn" class="nav-page-btn">
+      <span class="d-none d-sm-inline me-1">Next</span>
+      <i class="bi bi-chevron-right"></i>
+    </button>
+  </div>
+
+  <!-- TOC Offcanvas (mobile) -->
+  <div class="offcanvas offcanvas-start reader-offcanvas" id="toc-offcanvas">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title"><i class="bi bi-bookmark me-2"></i>Contents</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div id="toc-mobile" class="list-group list-group-flush"></div>
+    </div>
+  </div>
+
+  <!-- Settings Offcanvas -->
+  <div class="offcanvas offcanvas-end reader-offcanvas" id="settings-offcanvas">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title"><i class="bi bi-sliders me-2"></i>Settings</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+      <!-- Font Size -->
+      <div class="settings-group">
+        <p class="settings-label"><i class="bi bi-fonts me-2"></i>Font Size</p>
+        <div class="font-size-control">
+          <button id="font-decrease" class="font-btn">A<span class="small">-</span></button>
+          <div class="font-size-value" id="font-size-display">100%</div>
+          <button id="font-increase" class="font-btn">A<span class="large">+</span></button>
+        </div>
+      </div>
+
+      <!-- Theme -->
+      <div class="settings-group">
+        <p class="settings-label"><i class="bi bi-palette me-2"></i>Theme</p>
+        <div class="theme-switcher">
+          <button class="theme-option theme-btn active" data-theme="light" title="Light">
+            <div class="theme-preview theme-preview-light"></div>
+            <span>Light</span>
+          </button>
+          <button class="theme-option theme-btn" data-theme="sepia" title="Sepia">
+            <div class="theme-preview theme-preview-sepia"></div>
+            <span>Sepia</span>
+          </button>
+          <button class="theme-option theme-btn" data-theme="dark" title="Dark">
+            <div class="theme-preview theme-preview-dark"></div>
+            <span>Dark</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Flow Mode -->
+      <div class="settings-group">
+        <p class="settings-label"><i class="bi bi-layout-text-window me-2"></i>Reading Mode</p>
+        <div class="btn-group w-100" role="group">
+          <button class="btn btn-outline-secondary flow-btn active" data-flow="paginated">
+            <i class="bi bi-file-text me-1"></i> Paginated
+          </button>
+          <button class="btn btn-outline-secondary flow-btn" data-flow="scrolled-doc">
+            <i class="bi bi-text-paragraph me-1"></i> Scrolled
+          </button>
+        </div>
+      </div>
+
+      <!-- Book Info -->
+      <div id="book-info" class="settings-group d-none">
+        <p class="settings-label"><i class="bi bi-info-circle me-2"></i>Book Info</p>
+        <div id="book-meta" class="info-card"></div>
+      </div>
+
+      <!-- Book Stats -->
+      <div id="book-stats-section" class="settings-group d-none">
+        <p class="settings-label"><i class="bi bi-bar-chart me-2"></i>Book Stats</p>
+        <div id="book-stats" class="info-card"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analysis Offcanvas -->
+  <div class="offcanvas offcanvas-end analysis-offcanvas" id="analysis-offcanvas">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title"><i class="bi bi-graph-up me-2"></i>Book Analysis</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div id="analysis-content">
+        <div class="analysis-placeholder">
+          <i class="bi bi-clipboard-data"></i>
+          <p>Analyze your book for readability, structure, and writing patterns.</p>
+          <button id="run-analysis-btn" class="btn-analyze">
+            <i class="bi bi-play-fill"></i> Run Analysis
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Local file input (hidden, for client-only mode) -->
+  <input type="file" id="local-file-picker" accept=".epub" class="d-none">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/reader.js"></script>
+  <script src="/js/analysis.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  epub-viewer:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - epub_uploads:/app/uploads
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
+
+volumes:
+  epub_uploads:
